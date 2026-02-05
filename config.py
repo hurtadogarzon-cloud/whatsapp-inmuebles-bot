@@ -15,4 +15,5 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 print("OPENAI_API_KEY:", OPENAI_API_KEY[:5] if OPENAI_API_KEY else None)
 print("TWILIO_ACCOUNT_SID:", TWILIO_ACCOUNT_SID)
 
+SILENT_MODE = os.getenv("SILENT_MODE", "true").lower() == "true"
 
