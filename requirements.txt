@@ -1,0 +1,11 @@
+#requirements.txt
+fastapi
+uvicorn
+pandas
+openpyxl
+requests
+python-dotenv
+openai
+twilio
+python-multipart
+
