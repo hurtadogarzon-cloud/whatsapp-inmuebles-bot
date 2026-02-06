@@ -1,4 +1,6 @@
+from sheets import guardar_cita
 from fastapi import FastAPI, Request
+
 from fastapi.responses import PlainTextResponse
 
 from estados import obtener_usuario
@@ -124,3 +126,15 @@ async def webhook(request: Request):
 
 
     return PlainTextResponse("OK", status_code=200)
+
+@app.get("/test-sheet")
+def test_sheet():
+    guardar_cita(
+        telefono="3000000000",
+        inmueble="Apartamento Chapinero",
+        fecha="2026-02-06",
+        hora="10:00",
+        estado="prueba"
+    )
+    return {"ok": True}
+
