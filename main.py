@@ -18,7 +18,7 @@ async def webhook(request: Request):
         print("Error leyendo form:", e)
         return PlainTextResponse("OK", status_code=200)
     
-    form = await request.form()
+    
 
     mensaje = form.get("Body", "").lower()
     numero = form.get("From", "").replace("whatsapp:", "")
