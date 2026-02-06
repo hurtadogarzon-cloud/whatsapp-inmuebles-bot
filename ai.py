@@ -3,7 +3,7 @@ import re
 
 def interpretar(mensaje):
     data = {}
-    mensaje = mensaje.lower()
+    mensaje = mensaje.lower().strip()
 
     # Tipo de inmueble
     if "apartamento" in mensaje:
@@ -11,30 +11,15 @@ def interpretar(mensaje):
     elif "casa" in mensaje:
         data["tipo"] = "casa"
 
-    # Números (presupuesto o selección)
+    # Números (presupuesto, selección día u hora)
     numeros = re.findall(r"\d+", mensaje.replace(".", ""))
     if numeros:
-        valor = int(numeros[0])
-        data["presupuesto"] = valor
-        data["seleccion"] = valor
+        data["numero"] = int(numeros[0])
 
     # Afirmación
-    if mensaje in ["si", "sí", "claro", "dale", "ok"]:
+    if mensaje in ["si", "sí", "claro", "dale", "ok", "de una"]:
         data["afirmacion"] = "si"
-    elif mensaje in ["no", "nop", "gracias"]:
+    elif mensaje in ["no", "nop", "ninguno", "ninguna"]:
         data["afirmacion"] = "no"
 
     return data
-
-
-
-
-
-
-
-
-
-
-
-
-

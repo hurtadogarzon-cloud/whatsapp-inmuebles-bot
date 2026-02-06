@@ -1,4 +1,4 @@
-#estados.py
+# estados.py
 usuarios = {}
 
 def obtener_usuario(telefono):
@@ -8,8 +8,9 @@ def obtener_usuario(telefono):
             "tipo": None,
             "presupuesto": None,
             "opciones": [],
-            "seleccion": None
+            "seleccion": None,
+            "dias_disponibles": [],
+            "fecha_seleccionada": None,
+            "horarios_disponibles": []
         }
     return usuarios[telefono]
-
-
