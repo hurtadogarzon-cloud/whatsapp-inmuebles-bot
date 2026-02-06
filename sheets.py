@@ -5,10 +5,23 @@ import gspread
 from google.oauth2.service_account import Credentials
 from datetime import datetime
 
+# ID de tu Google Sheet
 SHEET_ID = "1-hW8cJP-o7AtAuShtyuA16J03L7gj15Lppt-WUcTqdA"
 
+
 def obtener_hoja():
-    creds_info = json.loads(os.environ["GOOGLE_SERVICE_ACCOUNT_JSON"])
+    # 🔒 Validación explícita de variable de entorno
+    if "GOOGLE_SERVICE_ACCOUNT_JSON" not in os.environ:
+        raise RuntimeError(
+            "❌ Falta la variable de entorno GOOGLE_SERVICE_ACCOUNT_JSON en Render"
+        )
+
+    try:
+        creds_info = json.loads(os.environ["GOOGLE_SERVICE_ACCOUNT_JSON"])
+    except json.JSONDecodeError as e:
+        raise RuntimeError(
+            "❌ GOOGLE_SERVICE_ACCOUNT_JSON no es un JSON válido"
+        ) from e
 
     scopes = [
         "https://www.googleapis.com/auth/spreadsheets",
@@ -22,10 +35,13 @@ def obtener_hoja():
 
     client = gspread.authorize(credentials)
     sheet = client.open_by_key(SHEET_ID)
+
     return sheet.sheet1
+
 
 def guardar_cita(telefono, inmueble, fecha, hora, estado="pendiente"):
     hoja = obtener_hoja()
+
     hoja.append_row([
         telefono,
         inmueble,
