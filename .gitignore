@@ -1,3 +1,9 @@
+# Entorno
 .env
+
+# Google credentials
+google_service_account.json
+
+# Python
 __pycache__/
 *.pyc
