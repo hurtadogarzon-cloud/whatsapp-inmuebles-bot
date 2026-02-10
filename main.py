@@ -46,9 +46,15 @@ async def webhook(request: Request):
 
     # ---------- INICIO ----------
     if estado == "INICIO":
-        enviar_template_inicio(numero)   # ✅ TEMPLATE APROBADO
+        if usuario.get("ya_iniciado"):
+            enviar_texto(numero, "Hola 😊 ¿En qué te ayudo hoy?")
+        else:
+            enviar_template_inicio(numero)
+            usuario["ya_iniciado"] = True
+
         usuario["estado"] = "TIPO"
         return PlainTextResponse("OK")
+
 
     # ---------- TIPO ----------
     elif estado == "TIPO":
