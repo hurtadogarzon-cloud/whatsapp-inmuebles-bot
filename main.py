@@ -9,7 +9,7 @@ from inmuebles import buscar_inmuebles
 from whatsapp import (
     enviar_texto,
     enviar_imagen,
-    enviar_template_inicio   # 👈 IMPORT CLAVE
+    
 )
 from sheets import guardar_cita
 
@@ -46,15 +46,15 @@ async def webhook(request: Request):
 
     # ---------- INICIO ----------
     if estado == "INICIO":
-        if usuario.get("ya_iniciado"):
-            enviar_texto(numero, "Hola 😊 ¿En qué te ayudo hoy?")
-        else:
-            enviar_template_inicio(numero)
-            usuario["ya_iniciado"] = True
-
+        enviar_texto(
+            numero,
+            "Hola 👋 Gracias por escribir a Inmobiliaria Sierra.\n"
+            "¿Buscas casa o apartamento?"
+        )
         usuario["estado"] = "TIPO"
         return PlainTextResponse("OK")
 
+    
 
     # ---------- TIPO ----------
     elif estado == "TIPO":
