@@ -26,7 +26,7 @@ def enviar_template_inicio(numero):
 
 def enviar_texto(numero, mensaje):
     try:
-        print("enviara MENSAJE :")
+        print(f"enviara MENSAJE : desde whatsapp:{TWILIO_WHATSAPP_NUMBER} hacia numero {numero} ")
         msg = client.messages.create(
             from_=f"whatsapp:{TWILIO_WHATSAPP_NUMBER}",
             to=f"whatsapp:{numero}",

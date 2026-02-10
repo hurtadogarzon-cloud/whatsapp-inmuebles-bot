@@ -51,6 +51,7 @@ async def webhook(request: Request):
     info = interpretar(mensaje)
 
     # ---------- INICIO ----------
+    print(f"estado {estado} | numero: {numero}")
     if estado == "INICIO":
         enviar_texto(
             numero,
