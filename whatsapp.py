@@ -24,18 +24,20 @@ def enviar_template_inicio(numero):
         content_sid=TEMPLATE_INICIO
     )
 
-
 def enviar_texto(numero, mensaje):
     try:
-        print("enviara MENSAJE :", msg.sid)
+        print("enviara MENSAJE :")
         msg = client.messages.create(
-            from_="whatsapp:+13617610863",
+            from_="whatsapp:+13617610863",  # hardcodeado para probar
             to=f"whatsapp:{numero}",
             body=mensaje
         )
-        print("✅ MENSAJE ENVIADO:", msg.sid)
-    except TwilioRestException as e:
-        print(f"❌ Twilio error: {e}")
+        print("✅ MENSAJE ENVIADO - SID:", msg.sid)
+        print("📨 STATUS:", msg.status)
+    except Exception as e:
+        print("❌ ERROR AL ENVIAR:", str(e))
+
+
 
 def enviar_imagen(numero, url, caption=None):
 
