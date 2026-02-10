@@ -39,6 +39,12 @@ async def webhook(request: Request):
 
     mensaje = form.get("Body", "").lower()
     numero = form.get("From", "").replace("whatsapp:", "")
+    
+    print(f"📩 Mensaje de {numero} | Body: {mensaje}")
+    
+    if not numero:
+        print("❌ Número vacío")
+        return PlainTextResponse("OK")
 
     usuario = obtener_usuario(numero)
     estado = usuario["estado"]

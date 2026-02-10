@@ -4,8 +4,7 @@ from twilio.base.exceptions import TwilioRestException
 from config import (
     TWILIO_ACCOUNT_SID,
     TWILIO_AUTH_TOKEN,
-    TWILIO_WHATSAPP_NUMBER,
-    SILENT_MODE
+    TWILIO_WHATSAPP_NUMBER
 )
 
 client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
@@ -27,10 +26,7 @@ def enviar_template_inicio(numero):
 
 
 def enviar_texto(numero, mensaje):
-    if SILENT_MODE:
-        print(f"[SILENT MODE] TEXTO a {numero}: {mensaje}")
-        return
-
+    
     try:
         client.messages.create(
             from_=f"whatsapp:{TWILIO_WHATSAPP_NUMBER}",
@@ -41,9 +37,6 @@ def enviar_texto(numero, mensaje):
         print(f"[Twilio error] {e}")
 
 def enviar_imagen(numero, url, caption=None):
-    if SILENT_MODE:
-        print(f"[SILENT MODE] IMAGEN a {numero}: {url}")
-        return
 
     client.messages.create(
         from_=f"whatsapp:{TWILIO_WHATSAPP_NUMBER}",
