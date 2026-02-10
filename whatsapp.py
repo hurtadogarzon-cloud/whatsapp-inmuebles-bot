@@ -12,18 +12,19 @@ client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 
 TEMPLATE_INICIO = os.getenv("TWILIO_TEMPLATE_INICIO")
 
-def enviar_template_inicio(numero):
-    if not TEMPLATE_INICIO:
-        print("❌ TEMPLATE_INICIO no definido")
-        return
 
-    print(f"📨 Enviando template {TEMPLATE_INICIO} a {numero}")
+
+def enviar_template_inicio(numero):
+    print("📤 Enviando template a:", numero)
+    print("📄 TEMPLATE:", TEMPLATE_INICIO)
+    print("📞 FROM:", TWILIO_WHATSAPP_NUMBER)
 
     client.messages.create(
         from_=f"whatsapp:{TWILIO_WHATSAPP_NUMBER}",
         to=f"whatsapp:{numero}",
         content_sid=TEMPLATE_INICIO
     )
+
 
 def enviar_texto(numero, mensaje):
     if SILENT_MODE:
