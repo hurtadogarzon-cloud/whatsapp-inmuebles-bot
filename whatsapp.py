@@ -28,7 +28,7 @@ def enviar_texto(numero, mensaje):
     try:
         print("enviara MENSAJE :")
         msg = client.messages.create(
-            from_="whatsapp:+13617610863",  # hardcodeado para probar
+            from_=f"whatsapp:{TWILIO_WHATSAPP_NUMBER}",
             to=f"whatsapp:{numero}",
             body=mensaje
         )
