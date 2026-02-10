@@ -10,4 +10,4 @@ TWILIO_WHATSAPP_NUMBER = os.getenv("TWILIO_WHATSAPP_NUMBER")
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-SILENT_MODE = os.getenv("SILENT_MODE", "false").lower() == "true"
+
