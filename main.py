@@ -1,11 +1,13 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import PlainTextResponse
 from datetime import datetime, timedelta
+from leads_db import guardar_lead
+
 
 from estados import obtener_usuario, actualizar_datos, actualizar_estado
 from ai import interpretar
 from inmuebles import buscar_inmuebles
-from whatsapp import enviar_texto, enviar_imagen
+from whatsapp import enviar_texto, enviar_imagen, notificar_cita
 from sheets import guardar_cita
 from mensajes_db import guardar_mensaje
 
@@ -37,8 +39,11 @@ async def webhook(request: Request):
     form = await request.form()
 
     mensaje = form.get("Body", "").lower()
-    guardar_mensaje(numero, "in", mensaje)
     numero = form.get("From", "").replace("whatsapp:", "")
+    nombre = form.get("ProfileName", "cliente")
+    
+    # Guardar mensaje del usuario
+    guardar_mensaje(numero, "in", mensaje)
 
     print(f"📩 Mensaje de {numero} | Body: {mensaje}")
 
@@ -56,11 +61,13 @@ async def webhook(request: Request):
     # ---------- INICIO ----------
     if estado == "INICIO":
 
-        enviar_texto(
-            numero,
+        texto = (
             "Hola 👋 Gracias por escribir a Inmobiliaria Sierra.\n"
             "¿Buscas casa o apartamento?"
         )
+
+        enviar_texto(numero, texto)
+        guardar_mensaje(numero, "out", texto)
 
         actualizar_estado(numero, "TIPO")
 
@@ -70,15 +77,20 @@ async def webhook(request: Request):
     elif estado == "TIPO":
 
         if not info.get("tipo"):
-            enviar_texto(numero, "¿Buscas casa o apartamento? 😊")
+
+            texto = "¿Buscas casa o apartamento? 😊"
+
+            enviar_texto(numero, texto)
+            guardar_mensaje(numero, "out", texto)
+
             return PlainTextResponse("OK")
 
         actualizar_datos(numero, tipo=info["tipo"])
 
-        enviar_texto(
-            numero,
-            "Perfecto 👍 ¿Cuál es tu presupuesto máximo? 💰"
-        )
+        texto = "Perfecto 👍 ¿Cuál es tu presupuesto máximo? 💰"
+
+        enviar_texto(numero, texto)
+        guardar_mensaje(numero, "out", texto)
 
         actualizar_estado(numero, "PRESUPUESTO")
 
@@ -88,7 +100,12 @@ async def webhook(request: Request):
         numero_info = info.get("numero")
 
         if not numero_info:
-            enviar_texto(numero, "Indícame el presupuesto en números 💵")
+
+            texto = "Indícame el presupuesto en números 💵"
+
+            enviar_texto(numero, texto)
+            guardar_mensaje(numero, "out", texto)
+
             return PlainTextResponse("OK")
 
         actualizar_datos(numero, presupuesto=numero_info)
@@ -97,10 +114,10 @@ async def webhook(request: Request):
 
         if not opciones:
 
-            enviar_texto(
-                numero,
-                "😕 No encontré inmuebles con ese presupuesto."
-            )
+            texto = "😕 No encontré inmuebles con ese presupuesto."
+
+            enviar_texto(numero, texto)
+            guardar_mensaje(numero, "out", texto)
 
             actualizar_estado(numero, "INICIO")
 
@@ -111,12 +128,12 @@ async def webhook(request: Request):
         texto = "🏘️ *Opciones disponibles:*\n\n"
 
         for i, o in enumerate(opciones, 1):
-
-            texto += f"{i}. {o['tipo'].title()} en {o['barrio']} - ${o['precio']}\n"
+            texto += f"{i}. {o['tipo'].title()} en {o['barrio']} - ${o['precio']:,}\n"
 
         texto += "\nEscribe el *número* de la opción que te interesa 😉"
 
         enviar_texto(numero, texto)
+        guardar_mensaje(numero, "out", texto)
 
         actualizar_estado(numero, "SELECCION")
 
@@ -127,16 +144,29 @@ async def webhook(request: Request):
 
         if not sel or sel > len(usuario["opciones"]):
 
-            enviar_texto(numero, "Dime el número de la opción 😊")
+            texto = "Dime el número de la opción 😊"
+
+            enviar_texto(numero, texto)
+            guardar_mensaje(numero, "out", texto)
 
             return PlainTextResponse("OK")
 
         actualizar_datos(numero, seleccion=sel)
 
-        enviar_texto(
+        inmueble = usuario["opciones"][sel - 1]
+
+        interes = f"{inmueble['tipo']} {inmueble['barrio']}"
+
+        guardar_lead(
             numero,
-            "¿Deseas ver *imágenes* del inmueble? 📸 (si / no)"
+            interes,
+            usuario["presupuesto"]
         )
+
+        texto = "¿Deseas ver *imágenes* del inmueble? 📸 (si / no)"
+
+        enviar_texto(numero, texto)
+        guardar_mensaje(numero, "out", texto)
 
         actualizar_estado(numero, "IMAGENES")
 
@@ -155,10 +185,10 @@ async def webhook(request: Request):
                     inmueble.get("descripcion", "")
                 )
 
-        enviar_texto(
-            numero,
-            "¿Deseas agendar una visita? 😊 (si / no)"
-        )
+        texto = "¿Deseas agendar una visita? 😊 (si / no)"
+
+        enviar_texto(numero, texto)
+        guardar_mensaje(numero, "out", texto)
 
         actualizar_estado(numero, "CONFIRMAR_AGENDA")
 
@@ -167,7 +197,10 @@ async def webhook(request: Request):
 
         if info.get("afirmacion") != "si":
 
-            enviar_texto(numero, "Perfecto 👍 Quedo atento.")
+            texto = "Perfecto 👍 Quedo atento."
+
+            enviar_texto(numero, texto)
+            guardar_mensaje(numero, "out", texto)
 
             actualizar_estado(numero, "INICIO")
 
@@ -180,12 +213,12 @@ async def webhook(request: Request):
         texto = "📅 *Días disponibles:*\n\n"
 
         for i, d in enumerate(dias, 1):
-
             texto += f"{i}. {d.strftime('%A %d de %B')}\n"
 
         texto += "\nEscribe el *número del día*"
 
         enviar_texto(numero, texto)
+        guardar_mensaje(numero, "out", texto)
 
         actualizar_estado(numero, "AGENDAR_DIA")
 
@@ -196,7 +229,10 @@ async def webhook(request: Request):
 
         if not idx or idx > len(usuario["dias_disponibles"]):
 
-            enviar_texto(numero, "Elige un número válido 😊")
+            texto = "Elige un número válido 😊"
+
+            enviar_texto(numero, texto)
+            guardar_mensaje(numero, "out", texto)
 
             return PlainTextResponse("OK")
 
@@ -211,12 +247,12 @@ async def webhook(request: Request):
         texto = f"⏰ Horarios para {fecha.strftime('%A %d de %B')}:\n\n"
 
         for i, h in enumerate(horarios, 1):
-
             texto += f"{i}. {h}\n"
 
         texto += "\nEscribe el *número del horario*"
 
         enviar_texto(numero, texto)
+        guardar_mensaje(numero, "out", texto)
 
         actualizar_estado(numero, "AGENDAR_HORA")
 
@@ -227,7 +263,10 @@ async def webhook(request: Request):
 
         if not idx or idx > len(usuario["horarios_disponibles"]):
 
-            enviar_texto(numero, "Elige un horario válido 😊")
+            texto = "Elige un horario válido 😊"
+
+            enviar_texto(numero, texto)
+            guardar_mensaje(numero, "out", texto)
 
             return PlainTextResponse("OK")
 
@@ -242,12 +281,22 @@ async def webhook(request: Request):
             hora=hora,
             estado="pendiente"
         )
-
-        enviar_texto(
+        
+        notificar_cita(
+            nombre,
             numero,
+            f"{inmueble['tipo']} {inmueble['barrio']}",
+            usuario["fecha_seleccionada"].strftime("%d/%m"),
+            hora
+        )
+
+        texto = (
             f"✅ Visita agendada para el {usuario['fecha_seleccionada'].strftime('%d/%m')} "
             f"a las {hora}.\nUn asesor la confirmará 😊"
         )
+
+        enviar_texto(numero, texto)
+        guardar_mensaje(numero, "out", texto)
 
         actualizar_estado(numero, "INICIO")
 

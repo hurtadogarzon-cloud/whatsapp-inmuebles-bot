@@ -48,3 +48,39 @@ def enviar_imagen(numero, url, caption=None):
         media_url=[url],
         body=caption or ""
     )
+
+
+
+ASESOR_WHATSAPP = os.getenv("ASESOR_WHATSAPP", None)
+
+def notificar_cita(nombre,telefono_cliente, inmueble, fecha, hora):
+
+    if not ASESOR_WHATSAPP:
+        print("⚠️ ASESOR_WHATSAPP no configurado")
+        return
+
+    mensaje = (
+        "📅 *NUEVA CITA AGENDADA*\n\n"
+        f"Cliente: {nombre}\n"
+        f"Cliente: {telefono_cliente}\n\n"
+        f"Inmueble:\n{inmueble}\n\n"
+        f"Fecha: {fecha}\n"
+        f"Hora: {hora}\n\n"
+        "Escríbele para confirmar la visita."
+    )
+
+    try:
+
+        client.messages.create(
+            from_=f"whatsapp:{TWILIO_WHATSAPP_NUMBER}",
+            to=f"whatsapp:{ASESOR_WHATSAPP}",
+            body=mensaje
+        )
+
+        print("✅ Notificación enviada al asesor")
+
+    except Exception as e:
+
+        print("❌ Error enviando notificación:", e)
+
+
