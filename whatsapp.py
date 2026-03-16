@@ -61,12 +61,12 @@ def notificar_cita(nombre,telefono_cliente, inmueble, fecha, hora):
 
     mensaje = (
         "📅 *NUEVA CITA AGENDADA*\n\n"
-        f"Cliente: {nombre}\n"
-        f"Cliente: {telefono_cliente}\n\n"
-        f"Inmueble:\n{inmueble}\n\n"
-        f"Fecha: {fecha}\n"
-        f"Hora: {hora}\n\n"
-        "Escríbele para confirmar la visita."
+        f"👤 Cliente: {nombre}\n"
+        f"📱 Teléfono: {telefono_cliente}\n\n"
+        f"🏠 Inmueble:\n{inmueble}\n\n"
+        f"📆 Fecha: {fecha}\n"
+        f"⏰ Hora: {hora}\n\n"
+        "✉️ Escríbele para confirmar la visita."
     )
 
     try:

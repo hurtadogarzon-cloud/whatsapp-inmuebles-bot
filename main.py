@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import PlainTextResponse
 from datetime import datetime, timedelta
 from leads_db import guardar_lead
-
+from fastapi import Response
 
 from estados import obtener_usuario, actualizar_datos, actualizar_estado
 from ai import interpretar
@@ -12,6 +12,7 @@ from sheets import guardar_cita
 from mensajes_db import guardar_mensaje
 
 app = FastAPI()
+PALABRAS_REINICIO = ["hola", "menu", "inicio", "empezar", "volver","hi"]
 
 # ---------- UTILIDADES ----------
 def generar_dias_disponibles(cantidad=10):
@@ -32,6 +33,7 @@ def generar_horarios(fecha):
         return [f"{h}:00" for h in range(8, 17)]
 
 
+
 # ---------- WEBHOOK ----------
 @app.post("/webhook")
 async def webhook(request: Request):
@@ -40,10 +42,29 @@ async def webhook(request: Request):
 
     mensaje = form.get("Body", "").lower()
     numero = form.get("From", "").replace("whatsapp:", "")
-    nombre = form.get("ProfileName", "cliente")
     
     # Guardar mensaje del usuario
     guardar_mensaje(numero, "in", mensaje)
+    
+    # Reiniciar conversación si el usuario lo pide
+    if any(p in mensaje for p in PALABRAS_REINICIO):
+        
+        actualizar_estado(numero, "INICIO")
+
+        texto = (
+            "Hola 👋 Bienvenido a Inmobiliaria Sierra.\n"
+            "¿Buscas *casa* o *apartamento*?"
+        )
+
+        enviar_texto(numero, texto)
+        guardar_mensaje(numero, "out", texto)
+
+        return Response(status_code=200)
+    
+    
+    nombre = form.get("ProfileName", "cliente")
+    
+    
 
     print(f"📩 Mensaje de {numero} | Body: {mensaje}")
 
