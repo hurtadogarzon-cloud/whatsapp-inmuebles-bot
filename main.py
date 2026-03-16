@@ -167,16 +167,21 @@ async def webhook(request: Request):
         actualizar_estado(numero, "SELECCION")
 
     # ---------- SELECCION ----------
+    # ---------- SELECCION ----------
     elif estado == "SELECCION":
 
-        sel = int(info.get("numero", 0))
+        sel = info.get("numero")
 
-        opciones = usuario.get("opciones")
+        if not sel:
+            texto = "Escríbeme el número de la opción que te gustó 😊"
+            enviar_texto(numero, texto)
+            guardar_mensaje(numero, "out", texto)
+            return PlainTextResponse(status_code=200)
 
-        if not opciones:
-            opciones = buscar_inmuebles(usuario["tipo"], usuario["presupuesto"])
+        # Siempre reconstruimos las opciones
+        opciones = buscar_inmuebles(usuario["tipo"], usuario["presupuesto"])
 
-        if sel <= 0 or sel > len(opciones):
+        if sel < 1 or sel > len(opciones):
 
             texto = "Escríbeme el número de la opción que te gustó 😊"
 
@@ -203,7 +208,6 @@ async def webhook(request: Request):
         guardar_mensaje(numero, "out", texto)
 
         actualizar_estado(numero, "IMAGENES")
-    
     
     
     # ---------- IMAGENES ----------
