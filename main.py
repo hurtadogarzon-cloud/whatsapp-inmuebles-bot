@@ -152,7 +152,7 @@ async def webhook(request: Request):
 
             return PlainTextResponse(status_code=200)
 
-        usuario["opciones"] = opciones
+        opciones = buscar_inmuebles(usuario["tipo"], numero_info)
 
         texto = "🏘️ *Opciones disponibles:*\n\n"
 
@@ -215,7 +215,9 @@ async def webhook(request: Request):
 
         if info.get("afirmacion") == "si":
 
-            inmueble = usuario["opciones"][usuario["seleccion"] - 1]
+            opciones = buscar_inmuebles(usuario["tipo"], usuario["presupuesto"])
+
+            inmueble = opciones[usuario["seleccion"] - 1]
 
             if inmueble.get("img_1"):
 
@@ -312,7 +314,9 @@ async def webhook(request: Request):
 
         hora = usuario["horarios_disponibles"][idx - 1]
 
-        inmueble = usuario["opciones"][usuario["seleccion"] - 1]
+        opciones = buscar_inmuebles(usuario["tipo"], usuario["presupuesto"])
+
+        inmueble = opciones[usuario["seleccion"] - 1]
 
         guardar_cita(
             telefono=numero,
