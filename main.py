@@ -40,7 +40,7 @@ async def webhook(request: Request):
 
     form = await request.form()
 
-    mensaje = form.get("Body", "").lower()
+    mensaje = form.get("Body", "").lower().strip()
     numero = form.get("From", "").replace("whatsapp:", "")
     
     # Guardar mensaje del usuario
@@ -161,11 +161,11 @@ async def webhook(request: Request):
     # ---------- SELECCION ----------
     elif estado == "SELECCION":
 
-        sel = info.get("numero")
+        sel = int(info.get("numero", 0))
 
-        if not sel or sel > len(usuario["opciones"]):
+        if sel <= 0 or sel > len(usuario["opciones"]):
 
-            texto = "Dime el número de la opción 😊"
+            texto = "Escríbeme el número de la opción que te gustó 😊"
 
             enviar_texto(numero, texto)
             guardar_mensaje(numero, "out", texto)
