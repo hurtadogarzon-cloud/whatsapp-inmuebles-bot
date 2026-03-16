@@ -49,7 +49,7 @@ async def webhook(request: Request):
 
     if not numero:
         print("❌ Número vacío")
-        return PlainTextResponse("OK")
+        return PlainTextResponse(status_code=200)
 
     usuario = obtener_usuario(numero)
     estado = usuario["estado"]
@@ -71,7 +71,7 @@ async def webhook(request: Request):
 
         actualizar_estado(numero, "TIPO")
 
-        return PlainTextResponse("OK")
+        return PlainTextResponse(status_code=200)
 
     # ---------- TIPO ----------
     elif estado == "TIPO":
@@ -83,7 +83,7 @@ async def webhook(request: Request):
             enviar_texto(numero, texto)
             guardar_mensaje(numero, "out", texto)
 
-            return PlainTextResponse("OK")
+            return PlainTextResponse(status_code=200)
 
         actualizar_datos(numero, tipo=info["tipo"])
 
@@ -106,7 +106,7 @@ async def webhook(request: Request):
             enviar_texto(numero, texto)
             guardar_mensaje(numero, "out", texto)
 
-            return PlainTextResponse("OK")
+            return PlainTextResponse(status_code=200)
 
         actualizar_datos(numero, presupuesto=numero_info)
 
@@ -121,7 +121,7 @@ async def webhook(request: Request):
 
             actualizar_estado(numero, "INICIO")
 
-            return PlainTextResponse("OK")
+            return PlainTextResponse(status_code=200)
 
         usuario["opciones"] = opciones
 
@@ -149,7 +149,7 @@ async def webhook(request: Request):
             enviar_texto(numero, texto)
             guardar_mensaje(numero, "out", texto)
 
-            return PlainTextResponse("OK")
+            return PlainTextResponse(status_code=200)
 
         actualizar_datos(numero, seleccion=sel)
 
@@ -204,7 +204,7 @@ async def webhook(request: Request):
 
             actualizar_estado(numero, "INICIO")
 
-            return PlainTextResponse("OK")
+            return PlainTextResponse(status_code=200)
 
         dias = generar_dias_disponibles()
 
@@ -234,7 +234,7 @@ async def webhook(request: Request):
             enviar_texto(numero, texto)
             guardar_mensaje(numero, "out", texto)
 
-            return PlainTextResponse("OK")
+            return PlainTextResponse(status_code=200)
 
         fecha = usuario["dias_disponibles"][idx - 1]
 
@@ -268,7 +268,7 @@ async def webhook(request: Request):
             enviar_texto(numero, texto)
             guardar_mensaje(numero, "out", texto)
 
-            return PlainTextResponse("OK")
+            return PlainTextResponse(status_code=200)
 
         hora = usuario["horarios_disponibles"][idx - 1]
 
@@ -300,4 +300,4 @@ async def webhook(request: Request):
 
         actualizar_estado(numero, "INICIO")
 
-    return PlainTextResponse("OK")
+    return PlainTextResponse(status_code=200)

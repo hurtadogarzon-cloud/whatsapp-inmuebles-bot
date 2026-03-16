@@ -4,6 +4,7 @@ import re
 def interpretar(mensaje):
     data = {}
     mensaje = mensaje.lower().strip()
+    mensaje = mensaje.replace(".", "")
 
     # Tipo de inmueble
     if "apartamento" in mensaje:
@@ -12,7 +13,7 @@ def interpretar(mensaje):
         data["tipo"] = "casa"
 
     # Números (presupuesto, selección día u hora)
-    numeros = re.findall(r"\d+", mensaje.replace(".", ""))
+    numeros = re.findall(r"\d+", mensaje)
     if numeros:
         data["numero"] = int(numeros[0])
 
