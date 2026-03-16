@@ -1,26 +1,45 @@
 # ai.py
+# ai.py
 import re
 
 def interpretar(mensaje):
+
     data = {}
-    mensaje = mensaje.lower().strip()
+
+    # ---------- LIMPIEZA DEL MENSAJE ----------
+    mensaje = mensaje.lower()
+    mensaje = mensaje.replace("\xa0", " ")
+    mensaje = " ".join(mensaje.split())
     mensaje = mensaje.replace(".", "")
 
-    # Tipo de inmueble
-    if "apartamento" in mensaje:
+    # ---------- TIPO DE INMUEBLE ----------
+    if any(p in mensaje for p in ["apartamento", "apto", "apart", "apt"]):
         data["tipo"] = "apartamento"
+
     elif "casa" in mensaje:
         data["tipo"] = "casa"
 
-    # Números (presupuesto, selección día u hora)
+    # ---------- NUMEROS ----------
     numeros = re.findall(r"\d+", mensaje)
+
     if numeros:
         data["numero"] = int(numeros[0])
 
-    # Afirmación
-    if mensaje in ["si", "sí", "claro", "dale", "ok", "de una"]:
+    # ---------- AFIRMACIONES ----------
+    afirmaciones = [
+        "si", "sí", "claro", "dale", "ok", "de una",
+        "obvio", "listo", "perfecto"
+    ]
+
+    negativos = [
+        "no", "nop", "ninguno", "ninguna",
+        "no gracias", "negativo"
+    ]
+
+    if mensaje in afirmaciones:
         data["afirmacion"] = "si"
-    elif mensaje in ["no", "nop", "ninguno", "ninguna"]:
+
+    elif mensaje in negativos:
         data["afirmacion"] = "no"
 
     return data

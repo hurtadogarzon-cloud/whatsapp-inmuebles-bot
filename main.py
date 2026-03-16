@@ -48,7 +48,15 @@ async def webhook(request: Request):
     
     # Reiniciar conversación si el usuario lo pide
     if any(p in mensaje for p in PALABRAS_REINICIO):
-        
+
+        actualizar_datos(
+            numero,
+            tipo=None,
+            presupuesto=None,
+            seleccion=None,
+            fecha_seleccionada=None
+        )
+
         actualizar_estado(numero, "INICIO")
 
         texto = (
