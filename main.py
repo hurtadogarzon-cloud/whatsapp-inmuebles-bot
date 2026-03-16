@@ -152,7 +152,6 @@ async def webhook(request: Request):
 
             return PlainTextResponse(status_code=200)
 
-        opciones = buscar_inmuebles(usuario["tipo"], numero_info)
 
         texto = "🏘️ *Opciones disponibles:*\n\n"
 
@@ -265,6 +264,22 @@ async def webhook(request: Request):
         actualizar_estado(numero, "AGENDAR_DIA")
 
     # ---------- AGENDAR DIA ----------
+    elif estado == "IMAGENES":
+
+        opciones = buscar_inmuebles(usuario["tipo"], usuario["presupuesto"])
+        inmueble = opciones[usuario["seleccion"] - 1]
+
+        if info.get("afirmacion") == "si":
+
+            if inmueble.get("img_1"):
+
+                enviar_imagen(
+                    numero,
+                    inmueble["img_1"],
+                    inmueble.get("descripcion", "")
+                )
+
+    # ---------- AGENDAR DIA ----------
     elif estado == "AGENDAR_DIA":
 
         idx = info.get("numero")
@@ -296,52 +311,6 @@ async def webhook(request: Request):
         enviar_texto(numero, texto)
         guardar_mensaje(numero, "out", texto)
 
-        actualizar_estado(numero, "AGENDAR_HORA")
+        actualizar_estado(numero, "AGENDAR_HORA")    
 
-    # ---------- AGENDAR HORA ----------
-    elif estado == "AGENDAR_HORA":
-
-        idx = info.get("numero")
-
-        if not idx or idx > len(usuario["horarios_disponibles"]):
-
-            texto = "Elige un horario válido 😊"
-
-            enviar_texto(numero, texto)
-            guardar_mensaje(numero, "out", texto)
-
-            return PlainTextResponse(status_code=200)
-
-        hora = usuario["horarios_disponibles"][idx - 1]
-
-        opciones = buscar_inmuebles(usuario["tipo"], usuario["presupuesto"])
-
-        inmueble = opciones[usuario["seleccion"] - 1]
-
-        guardar_cita(
-            telefono=numero,
-            inmueble=f"{inmueble['tipo']} {inmueble['barrio']}",
-            fecha=usuario["fecha_seleccionada"].strftime("%Y-%m-%d"),
-            hora=hora,
-            estado="pendiente"
-        )
-        
-        notificar_cita(
-            nombre,
-            numero,
-            f"{inmueble['tipo']} {inmueble['barrio']}",
-            usuario["fecha_seleccionada"].strftime("%d/%m"),
-            hora
-        )
-
-        texto = (
-            f"✅ Visita agendada para el {usuario['fecha_seleccionada'].strftime('%d/%m')} "
-            f"a las {hora}.\nUn asesor la confirmará 😊"
-        )
-
-        enviar_texto(numero, texto)
-        guardar_mensaje(numero, "out", texto)
-
-        actualizar_estado(numero, "INICIO")
-
-    return PlainTextResponse(status_code=200)
+        return PlainTextResponse(status_code=200)
