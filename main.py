@@ -163,7 +163,9 @@ async def webhook(request: Request):
 
         sel = int(info.get("numero", 0))
 
-        if sel <= 0 or sel > len(usuario["opciones"]):
+        opciones = buscar_inmuebles(usuario["tipo"], usuario["presupuesto"])
+
+        if sel <= 0 or sel > len(opciones):
 
             texto = "Escríbeme el número de la opción que te gustó 😊"
 
@@ -172,10 +174,10 @@ async def webhook(request: Request):
 
             return PlainTextResponse(status_code=200)
 
+        inmueble = opciones[sel - 1]
+
         actualizar_datos(numero, seleccion=sel)
-
-        inmueble = usuario["opciones"][sel - 1]
-
+        
         interes = f"{inmueble['tipo']} {inmueble['barrio']}"
 
         guardar_lead(
