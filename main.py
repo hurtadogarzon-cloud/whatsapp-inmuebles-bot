@@ -14,7 +14,7 @@ from mensajes_db import guardar_mensaje
 from inmuebles import buscar_inmuebles, obtener_imagenes
 
 app = FastAPI()
-PALABRAS_REINICIO = ["hola", "menu", "inicio", "empezar", "volver","hi"]
+PALABRAS_REINICIO = ["hola", "menu", "inicio", "empezar", "volver","hi","buenos","buenas"]
 
 # ---------- UTILIDADES ----------
 def generar_dias_disponibles(cantidad=10):
@@ -94,7 +94,7 @@ async def webhook(request: Request):
 
         actualizar_estado(numero, "TIPO")
 
-        return PlainTextResponse(status_code=200)
+        estado = "TIPO"
 
     # ---------- TIPO ----------
     elif estado == "TIPO":
@@ -232,18 +232,16 @@ async def webhook(request: Request):
 
                     caption = inmueble["descripcion"] if i == 0 else None
 
-                    enviar_imagen(
-                        numero,
-                        img,
-                        caption
-                    )
+                    enviar_imagen(numero, img, caption)
 
-                    time.sleep(0.6)
+                    time.sleep(1.2)   # pausa entre imágenes
 
             else:
                 enviar_texto(numero, "⚠️ Este inmueble aún no tiene fotos disponibles.")
 
-        # SOLO después de enviar TODAS las imágenes
+        # pausa final antes de preguntar
+        time.sleep(4)
+
         texto = "¿Deseas agendar una visita? 😊 (si / no)"
 
         enviar_texto(numero, texto)
