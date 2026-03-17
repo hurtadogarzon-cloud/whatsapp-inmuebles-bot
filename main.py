@@ -118,6 +118,8 @@ async def webhook(request: Request):
         guardar_mensaje(numero, "out", texto)
 
         actualizar_estado(numero, "PRESUPUESTO")
+        
+        return PlainTextResponse(status_code=200)
 
     # ---------- PRESUPUESTO ----------
     elif estado == "PRESUPUESTO":
@@ -201,48 +203,32 @@ async def webhook(request: Request):
             usuario["presupuesto"]
         )
 
-        texto = "¿Deseas ver *imágenes* del inmueble? 📸 (si / no)"
+        texto = (
+            f"🏠 *{inmueble['tipo'].title()} en {inmueble['barrio']}*\n"
+            f"💰 ${inmueble['precio']:,}\n"
+            f"📝 {inmueble['descripcion']}\n\n"
+            "📸 Estas son algunas fotos:"
+        )
 
         enviar_texto(numero, texto)
         guardar_mensaje(numero, "out", texto)
 
-        actualizar_estado(numero, "IMAGENES")
+        imagenes = obtener_imagenes(inmueble["id"])
 
-        return PlainTextResponse(status_code=200)
-    
-    elif estado == "IMAGENES":
+        if imagenes:
 
-        if info.get("afirmacion") == "si":
+            for i, img in enumerate(imagenes):
 
-            opciones = buscar_inmuebles(usuario["tipo"], usuario["presupuesto"])
+                caption = inmueble["descripcion"] if i == 0 else None
 
-            inmueble = opciones[usuario["seleccion"] - 1]
+                enviar_imagen(numero, img, caption)
 
-            texto = (
-                f"🏠 *{inmueble['tipo'].title()} en {inmueble['barrio']}*\n"
-                f"💰 ${inmueble['precio']:,}\n\n"
-                "📸 Estas son algunas fotos:"
-            )
+                time.sleep(1)
 
-            enviar_texto(numero, texto)
+        else:
+            enviar_texto(numero, "⚠️ Este inmueble aún no tiene fotos disponibles.")
 
-            imagenes = obtener_imagenes(inmueble["id"])
-
-            if imagenes:
-
-                for i, img in enumerate(imagenes):
-
-                    caption = inmueble["descripcion"] if i == 0 else None
-
-                    enviar_imagen(numero, img, caption)
-
-                    time.sleep(1.2)   # pausa entre imágenes
-
-            else:
-                enviar_texto(numero, "⚠️ Este inmueble aún no tiene fotos disponibles.")
-
-        # pausa final antes de preguntar
-        time.sleep(4)
+        time.sleep(3)
 
         texto = "¿Deseas agendar una visita? 😊 (si / no)"
 
