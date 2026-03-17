@@ -139,7 +139,8 @@ async def webhook(request: Request):
 
         actualizar_datos(numero, presupuesto=numero_info)
 
-        opciones = buscar_inmuebles(usuario["tipo"], numero_info)
+        tipo = usuario["tipo"]
+        opciones = buscar_inmuebles(tipo, numero_info)
 
         if not opciones:
 
@@ -164,6 +165,7 @@ async def webhook(request: Request):
         guardar_mensaje(numero, "out", texto)
 
         actualizar_estado(numero, "SELECCION")
+        return PlainTextResponse(status_code=200)
 
     # ---------- SELECCION ----------
     # ---------- SELECCION ----------
@@ -193,6 +195,8 @@ async def webhook(request: Request):
 
         actualizar_datos(numero, seleccion=sel)
 
+        usuario = obtener_usuario(numero)
+        
         interes = f"{inmueble['tipo']} {inmueble['barrio']}"
 
         guardar_lead(
@@ -263,22 +267,7 @@ async def webhook(request: Request):
 
         actualizar_estado(numero, "AGENDAR_DIA")
 
-    # ---------- AGENDAR DIA ----------
-    elif estado == "IMAGENES":
-
-        opciones = buscar_inmuebles(usuario["tipo"], usuario["presupuesto"])
-        inmueble = opciones[usuario["seleccion"] - 1]
-
-        if info.get("afirmacion") == "si":
-
-            if inmueble.get("img_1"):
-
-                enviar_imagen(
-                    numero,
-                    inmueble["img_1"],
-                    inmueble.get("descripcion", "")
-                )
-
+    
     # ---------- AGENDAR DIA ----------
     elif estado == "AGENDAR_DIA":
 
