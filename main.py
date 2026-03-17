@@ -94,6 +94,8 @@ async def webhook(request: Request):
 
         actualizar_estado(numero, "TIPO")
 
+        usuario["estado"] = "TIPO"
+
         estado = "TIPO"
 
     # ---------- TIPO ----------
