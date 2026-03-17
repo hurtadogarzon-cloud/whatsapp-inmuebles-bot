@@ -1,6 +1,8 @@
 #inmuebles.py
 from db import get_connection
 
+
+
 def buscar_inmuebles(tipo, presupuesto):
 
     conn = get_connection()
@@ -8,7 +10,7 @@ def buscar_inmuebles(tipo, presupuesto):
 
     cursor.execute(
         """
-        SELECT tipo, barrio, precio, descripcion, img_1
+        SELECT id, tipo, barrio, precio, descripcion
         FROM inmuebles
         WHERE tipo = %s AND precio <= %s
         ORDER BY precio ASC
@@ -26,11 +28,37 @@ def buscar_inmuebles(tipo, presupuesto):
 
     for r in rows:
         resultados.append({
-            "tipo": r[0],
-            "barrio": r[1],
-            "precio": r[2],
-            "descripcion": r[3],
-            "img_1": r[4]
+            "id": r[0],
+            "tipo": r[1],
+            "barrio": r[2],
+            "precio": r[3],
+            "descripcion": r[4]
         })
 
     return resultados
+
+
+
+from db import get_connection
+
+def obtener_imagenes(inmueble_id):
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        SELECT url
+        FROM inmueble_imagenes
+        WHERE inmueble_id = %s
+        ORDER BY orden
+        """,
+        (inmueble_id,)
+    )
+
+    rows = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return [r[0] for r in rows]

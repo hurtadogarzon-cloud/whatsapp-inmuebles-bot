@@ -6,10 +6,11 @@ from fastapi import Response
 
 from estados import obtener_usuario, actualizar_datos, actualizar_estado
 from ai import interpretar
-from inmuebles import buscar_inmuebles
 from whatsapp import enviar_texto, enviar_imagen, notificar_cita
 from sheets import guardar_cita
 from mensajes_db import guardar_mensaje
+
+from inmuebles import buscar_inmuebles, obtener_imagenes
 
 app = FastAPI()
 PALABRAS_REINICIO = ["hola", "menu", "inicio", "empezar", "volver","hi"]
@@ -211,7 +212,8 @@ async def webhook(request: Request):
         guardar_mensaje(numero, "out", texto)
 
         actualizar_estado(numero, "IMAGENES")
-    
+
+        return PlainTextResponse(status_code=200)
     
     # ---------- IMAGENES ----------
     elif estado == "IMAGENES":
@@ -222,13 +224,32 @@ async def webhook(request: Request):
 
             inmueble = opciones[usuario["seleccion"] - 1]
 
-            if inmueble.get("img_1"):
+            texto = (
+                f"🏠 *{inmueble['tipo'].title()} en {inmueble['barrio']}*\n"
+                f"💰 ${inmueble['precio']:,}\n\n"
+                "📸 Estas son algunas fotos:"
+            )
 
-                enviar_imagen(
-                    numero,
-                    inmueble["img_1"],
-                    inmueble.get("descripcion", "")
-                )
+            enviar_texto(numero, texto)
+
+            imagenes = obtener_imagenes(inmueble["id"])
+
+            imagenes = obtener_imagenes(inmueble["id"])
+
+            if not imagenes:
+                enviar_texto(numero, "⚠️ Este inmueble aún no tiene fotos disponibles.")
+            else:
+                for i, img in enumerate(imagenes):
+
+                    caption = inmueble["descripcion"] if i == 0 else None
+
+                    enviar_imagen(
+                        numero,
+                        img,
+                        caption
+                    )
+            
+            
 
         texto = "¿Deseas agendar una visita? 😊 (si / no)"
 
@@ -236,6 +257,7 @@ async def webhook(request: Request):
         guardar_mensaje(numero, "out", texto)
 
         actualizar_estado(numero, "CONFIRMAR_AGENDA")
+        return PlainTextResponse(status_code=200)
 
     # ---------- CONFIRMAR AGENDA ----------
     elif estado == "CONFIRMAR_AGENDA":
