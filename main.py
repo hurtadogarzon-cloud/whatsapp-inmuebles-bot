@@ -3,6 +3,7 @@ from fastapi.responses import PlainTextResponse
 from datetime import datetime, timedelta
 from leads_db import guardar_lead
 from fastapi import Response
+import time
 
 from estados import obtener_usuario, actualizar_datos, actualizar_estado
 from ai import interpretar
@@ -90,14 +91,6 @@ async def webhook(request: Request):
 
     # ---------- INICIO ----------
     if estado == "INICIO":
-
-        texto = (
-            "Hola 👋 Gracias por escribir a Inmobiliaria Sierra.\n"
-            "¿Buscas casa o apartamento?"
-        )
-
-        enviar_texto(numero, texto)
-        guardar_mensaje(numero, "out", texto)
 
         actualizar_estado(numero, "TIPO")
 
@@ -215,7 +208,6 @@ async def webhook(request: Request):
 
         return PlainTextResponse(status_code=200)
     
-    # ---------- IMAGENES ----------
     elif estado == "IMAGENES":
 
         if info.get("afirmacion") == "si":
@@ -234,11 +226,8 @@ async def webhook(request: Request):
 
             imagenes = obtener_imagenes(inmueble["id"])
 
-            imagenes = obtener_imagenes(inmueble["id"])
+            if imagenes:
 
-            if not imagenes:
-                enviar_texto(numero, "⚠️ Este inmueble aún no tiene fotos disponibles.")
-            else:
                 for i, img in enumerate(imagenes):
 
                     caption = inmueble["descripcion"] if i == 0 else None
@@ -248,17 +237,23 @@ async def webhook(request: Request):
                         img,
                         caption
                     )
-            
-            
 
+                    time.sleep(0.6)
+
+            else:
+                enviar_texto(numero, "⚠️ Este inmueble aún no tiene fotos disponibles.")
+
+        # SOLO después de enviar TODAS las imágenes
         texto = "¿Deseas agendar una visita? 😊 (si / no)"
 
         enviar_texto(numero, texto)
         guardar_mensaje(numero, "out", texto)
 
         actualizar_estado(numero, "CONFIRMAR_AGENDA")
-        return PlainTextResponse(status_code=200)
 
+        return PlainTextResponse(status_code=200)
+    
+    
     # ---------- CONFIRMAR AGENDA ----------
     elif estado == "CONFIRMAR_AGENDA":
 
