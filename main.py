@@ -99,7 +99,7 @@ async def webhook(request: Request):
         estado = usuario["estado"]
 
     # ---------- TIPO ----------
-    elif estado == "TIPO":
+    if estado == "TIPO":
 
         if not info.get("tipo"):
 
