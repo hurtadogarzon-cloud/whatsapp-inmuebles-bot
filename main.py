@@ -223,12 +223,12 @@ async def webhook(request: Request):
 
                 enviar_imagen(numero, img, caption)
 
-                time.sleep(1)
+                time.sleep(0.5)
 
         else:
             enviar_texto(numero, "⚠️ Este inmueble aún no tiene fotos disponibles.")
 
-        time.sleep(3)
+        time.sleep(5)
 
         texto = "¿Deseas agendar una visita? 😊 (si / no)"
 
@@ -272,11 +272,14 @@ async def webhook(request: Request):
 
     
     # ---------- AGENDAR DIA ----------
-    elif estado == "AGENDAR_DIA":
+    elif estado == "AGENDAR_HORA":
 
         idx = info.get("numero")
 
-        if not idx or idx > len(usuario["dias_disponibles"]):
+        fecha = usuario["fecha_seleccionada"]
+        horarios = generar_horarios(fecha)
+
+        if not idx or idx > len(horarios):
 
             texto = "Elige un número válido 😊"
 
@@ -285,24 +288,44 @@ async def webhook(request: Request):
 
             return PlainTextResponse(status_code=200)
 
-        fecha = usuario["dias_disponibles"][idx - 1]
+        hora = horarios[idx - 1]
 
-        actualizar_datos(numero, fecha_seleccionada=fecha)
+        # reconstruir inmueble
+        opciones = buscar_inmuebles(usuario["tipo"], usuario["presupuesto"])
+        inmueble = opciones[usuario["seleccion"] - 1]
 
-        horarios = generar_horarios(fecha)
+        # ---------- GUARDAR EN SHEETS ----------
+        guardar_cita(
+            numero,
+            f"{inmueble['tipo']} {inmueble['barrio']}",
+            fecha.strftime("%Y-%m-%d"),
+            hora
+        )
 
-        usuario["horarios_disponibles"] = horarios
+        # ---------- NOTIFICAR ASESOR ----------
+        notificar_cita(
+            nombre="Cliente WhatsApp",
+            telefono_cliente=numero,
+            inmueble=f"{inmueble['tipo']} en {inmueble['barrio']}",
+            fecha=fecha.strftime("%Y-%m-%d"),
+            hora=hora
+        )
 
-        texto = f"⏰ Horarios para {fecha.strftime('%A %d de %B')}:\n\n"
-
-        for i, h in enumerate(horarios, 1):
-            texto += f"{i}. {h}\n"
-
-        texto += "\nEscribe el *número del horario*"
+        # ---------- RESPUESTA AL USUARIO ----------
+        texto = (
+            "✅ Tu cita fue agendada con éxito.\n\n"
+            "Un asesor te confirmará por WhatsApp 📲"
+        )
 
         enviar_texto(numero, texto)
         guardar_mensaje(numero, "out", texto)
 
-        actualizar_estado(numero, "AGENDAR_HORA")    
+        actualizar_estado(numero, "INICIO")
 
         return PlainTextResponse(status_code=200)
+        
+        
+        
+        
+        
+        
